@@ -39,9 +39,31 @@ Connector.isPlaying = () => {
 	return !!pauseButton;
 };
 
-const startObserving = (player: ShadowRoot) => {
+const observePlayerForChanges = (player: ShadowRoot) => {
+	console.log("Player's children changed, setting up player state observer");
+
 	const observer = new MutationObserver(() => {
 		Connector.onStateChanged();
+	});
+	const target = player.getElementById('player');
+	if (!target) {
+		console.error('No player found, ignoring observer');
+		return;
+	}
+
+	observer.observe(target, {
+		attributes: true,
+	});
+	console.log('Finished setting up player state observer');
+};
+
+const startObserving = (player: ShadowRoot) => {
+	const observer = new MutationObserver(() => {
+		// Trigger an initial state change event.
+		Connector.onStateChanged();
+
+		// And set up an observer for changes in the player's dataset.
+		observePlayerForChanges(player);
 	});
 	const target = player.querySelector('.player');
 	if (!target) {
